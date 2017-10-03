@@ -316,7 +316,7 @@ void AES::clean ()
 
 /******************************************************************************/
 
-void AES::copy_n_bytes (byte * d, byte * s, byte nn)
+void AES::copy_n_bytes (byte * d, const byte * s, byte nn)
 {
   while (nn >= 4)
     {
@@ -488,21 +488,22 @@ void AES::get_IV(byte *out){
 
 /******************************************************************************/
 
-void AES::calc_size_n_pad(int p_size){
-	int s_of_p = p_size - 1;
+int AES::calc_size_n_pad(const int p_size){
+	const int s_of_p = p_size/* - 1*/;
 	if ( s_of_p % N_BLOCK == 0){
-      size = s_of_p;
+    size = s_of_p;
 	}else{
 		size = s_of_p +  (N_BLOCK-(s_of_p % N_BLOCK));
 	}
 	pad = size - s_of_p;
+  return size;
 }
 
 /******************************************************************************/
 
 void AES::padPlaintext(void* in,byte* out)
 {
-	memcpy(out,in,size);
+	memcpy(out,in,size-pad);
 	for (int i = size-pad; i < size; i++){;
 		out[i] = arr_pad[pad - 1];
 	}
@@ -512,7 +513,7 @@ void AES::padPlaintext(void* in,byte* out)
 
 bool AES::CheckPad(byte* in,int lsize){
 	if (in[lsize-1] <= 0x0f){
-		int lpad = (int)in[lsize-1];
+		const int lpad = (int)in[lsize-1];
 		for (int i = lsize - 1; i >= lsize-lpad; i--){
 			if (arr_pad[lpad - 1] != in[i]){
 				return false;
@@ -535,7 +536,7 @@ for (j = 0; j < loops; j += 1){
   if (p_pad && (j == (loops  - 1)) ) { outp = N_BLOCK - pad; }
   for (i = 0; i < outp; i++)
   {
-    printf_P(PSTR("%c"),output[j*N_BLOCK + i]);
+    printf_P(PSTR("%02x"),output[j*N_BLOCK + i]);
   }
 }
   printf_P(PSTR("\n"));
@@ -547,7 +548,7 @@ void AES::printArray(byte output[],int sizel)
 {
   for (int i = 0; i < sizel; i++)
   {
-    printf_P(PSTR("%x"),output[i]);
+    printf_P(PSTR("%02x"),output[i]);
   }
   printf_P(PSTR("\n"));
 }
@@ -559,7 +560,7 @@ void AES::do_aes_encrypt(byte *plain,int size_p,byte *cipher,byte *key, int bits
 	calc_size_n_pad(size_p);
 	byte plain_p[get_size()];
 	padPlaintext(plain,plain_p);
-	int blocks = get_size() / N_BLOCK;
+	const int blocks = get_size() / N_BLOCK;
 	set_key (key, bits) ;
 	cbc_encrypt (plain_p, cipher, blocks, ivl);
 }
@@ -570,7 +571,7 @@ void AES::do_aes_encrypt(byte *plain,int size_p,byte *cipher,byte *key, int bits
 	calc_size_n_pad(size_p);
 	byte plain_p[get_size()];
 	padPlaintext(plain,plain_p);
-	int blocks = get_size() / N_BLOCK;
+	const int blocks = get_size() / N_BLOCK;
 	set_key (key, bits) ;
 	cbc_encrypt (plain_p, cipher, blocks);
 }
@@ -579,7 +580,7 @@ void AES::do_aes_encrypt(byte *plain,int size_p,byte *cipher,byte *key, int bits
 
 void AES::do_aes_decrypt(byte *cipher,int size_c,byte *plain,byte *key, int bits, byte ivl [N_BLOCK]){
 	set_size(size_c);
-	int blocks = size_c / N_BLOCK;
+	const int blocks = size_c / N_BLOCK;
 	set_key (key, bits);
 	cbc_decrypt (cipher,plain, blocks, ivl);
 }
@@ -588,7 +589,7 @@ void AES::do_aes_decrypt(byte *cipher,int size_c,byte *plain,byte *key, int bits
 
 void AES::do_aes_decrypt(byte *cipher,int size_c,byte *plain,byte *key, int bits){
 	set_size(size_c);
-	int blocks = size_c / N_BLOCK;
+	const int blocks = size_c / N_BLOCK;
 	set_key (key, bits);
 	cbc_decrypt (cipher,plain, blocks);
 }

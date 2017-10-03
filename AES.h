@@ -77,7 +77,7 @@ class AES
 	 *  i have not updated the function in the implementation yet, but it is considered a future plan.
 	 *
 	 */
-	void copy_n_bytes (byte * AESt, byte * src, byte n) ;
+	void copy_n_bytes (byte * AESt, const byte * src, byte n) ;
 
 	/** Encrypt a single block of 16 bytes .
 	 *  @param plain[N_BLOCK] Array of the plaintext.
@@ -197,8 +197,9 @@ class AES
 	 * and the size of the padding needed. Moreover it stores them in their class variables.
 	 *
 	 * @param p_size the size of the byte array ex sizeof(plaintext)
+	 * @return int, the padded size of the input plaintext size.
 	*/
-	void calc_size_n_pad(int p_size);
+	int calc_size_n_pad(const int p_size);
 
 	/** Pads the plaintext
 	 *
