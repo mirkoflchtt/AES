@@ -247,6 +247,7 @@ AES::AES(){
 	arr_pad[12] = 0x0d;
 	arr_pad[13] = 0x0e;
 	arr_pad[14] = 0x0f;
+	arr_pad[15] = 0x10;
 }
 
 /******************************************************************************/
@@ -488,15 +489,9 @@ void AES::get_IV(byte *out){
 
 /******************************************************************************/
 
-int AES::calc_size_n_pad(const int p_size){
-	const int s_of_p = p_size/* - 1*/;
-	if ( s_of_p % N_BLOCK == 0){
-    size = s_of_p;
-	}else{
-		size = s_of_p +  (N_BLOCK-(s_of_p % N_BLOCK));
-	}
-	pad = size - s_of_p;
-  return size;
+void AES::calc_size_n_pad(int p_size){
+    pad = N_BLOCK - p_size % N_BLOCK;
+    size = p_size + pad;
 }
 
 /******************************************************************************/
@@ -512,8 +507,8 @@ void AES::padPlaintext(void* in,byte* out)
 /******************************************************************************/
 
 bool AES::CheckPad(byte* in,int lsize){
-	if (in[lsize-1] <= 0x0f){
-		const int lpad = (int)in[lsize-1];
+	if (in[lsize-1] <= 0x10){
+		int lpad = (int)in[lsize-1];
 		for (int i = lsize - 1; i >= lsize-lpad; i--){
 			if (arr_pad[lpad - 1] != in[i]){
 				return false;
@@ -548,7 +543,7 @@ void AES::printArray(byte output[],int sizel)
 {
   for (int i = 0; i < sizel; i++)
   {
-    printf_P(PSTR("%02x"),output[i]);
+    printf_P(PSTR("%02x"),output[i]); // print hex in fixed 2-cgar format
   }
   printf_P(PSTR("\n"));
 }
